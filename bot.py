@@ -3,6 +3,7 @@ import subprocess
 import random
 import json
 from itertools import cycle
+from exchanges.bitfinex import Bitfinex
 
 with open('config.json', 'r+', encoding='utf-8') as f:
     config = json.load(f)
@@ -15,7 +16,8 @@ async def on_ready():
     os.system('title Bot running.')
     print('Bot started / Running.')
     while True:
-        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="$help | BTC: "))
+        await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"$help | BTC: ${Bitfinex().get_current_price()}"))
+        await asyncio.sleep(60)
 
 displayoptions = ["If you'd like to contribute to the bot's development (not required), feel free to send any necessary amount to 17rpaAv4XXDLeTLP6kzMKxd3d3zqdkCpgD", " Invite this discord bot to your server! https://discord.com/oauth2/authorize?client_id=806580500986593282&scope=bot"]
 def checkConfirmations(txid, proxy=None):
