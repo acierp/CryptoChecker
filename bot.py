@@ -1,8 +1,11 @@
 import discord, asyncio, requests, re, time, os, sys, json;from re import search;from discord.ext import commands;from discord.ext.commands import has_permissions, MissingPermissions
 import subprocess
 import random
-from itertools import cycle
 import json
+from itertools import cycle
+
+with open('config.json', 'r+', encoding='utf-8') as f:
+    config = json.load(f)
 
 bot = commands.Bot(command_prefix='$')
 
@@ -14,37 +17,15 @@ async def on_ready():
     while True:
         await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="$help | BTC: "))
 
-with open('proxies.txt','r+', encoding='utf-8') as f:
-	ProxyPool = cycle(f.read().splitlines())
-
-with open('config.json', 'r+', encoding='utf-8') as f:
-    config = json.load(f)
-
 displayoptions = ["If you'd like to contribute to the bot's development (not required), feel free to send any necessary amount to 17rpaAv4XXDLeTLP6kzMKxd3d3zqdkCpgD", " Invite this discord bot to your server! https://discord.com/oauth2/authorize?client_id=806580500986593282&scope=bot"]
 def checkConfirmations(txid, proxy=None):
     if proxy == None:
-        proxy = {"https": "https://" + next(ProxyPool)}
-        getconv = requests.get(f'https://api.blockcypher.com/v1/btc/main/txs/{txid}?limit=50&includeHex=true', proxies=proxy)
+        getconv = requests.get(f'https://api.blockcypher.com/v1/btc/main/txs/{txid}?limit=50&includeHex=true')
         if getconv.status_code == 200:
             if getconv.json()['double_spend'] == True:
                 return "DoubleSpent"
             else:
                 return getconv.json()['confirmations']
-        elif getconv.status_code == 429:
-            proxy = {"https": "https://" + next(ProxyPool)}
-            return checkConfirmations(txid, proxy)
-        else:
-            return checkConfirmations(txid)
-    else:
-        getconv = requests.get(f'https://api.blockcypher.com/v1/btc/main/txs/{txid}?limit=50&includeHex=true', proxies=proxy)
-        if getconv.status_code == 200:
-            if getconv.json()['double_spend'] == True:
-                return "DoubleSpent"
-            else:
-                return getconv.json()['confirmations']
-        elif getconv.status_code == 429:
-            proxy = {"https": "https://" + next(ProxyPool)}
-            return checkConfirmations(txid, proxy)
         else:
             return checkConfirmations(txid)
 
